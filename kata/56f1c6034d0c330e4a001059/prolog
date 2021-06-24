@@ -1,0 +1,17 @@
+color_segment(0, 0). color_segment(8, 8).
+color_segment(1, 1). color_segment(9, 9).
+color_segment(2, 2). color_segment(10, a).
+color_segment(3, 3). color_segment(11, b).
+color_segment(4, 4). color_segment(12, c).
+color_segment(5, 5). color_segment(13, d).
+color_segment(6, 6). color_segment(14, e).
+color_segment(7, 7). color_segment(15, f).
+
+gen_color_seg(C) :-
+    random_between(0, 15, X),
+    color_segment(X, C);
+    gen_color_seg(C).
+
+gen_color(Color) :-
+    findnsols(6, C, gen_color_seg(C), Color1),
+    format(atom(Color), "#~p~p~p~p~p~p", Color1).
