@@ -1,0 +1,14 @@
+:- dynamic prime/1.
+
+%prime(2).
+%prime(3).
+%prime(5).
+
+isPrime(0) :- !, fail.
+isPrime(1) :- !, fail.
+isPrime(N) :-
+    prime(N), !.
+
+?- assertz(prime(2)),
+   assertz(prime(3)),
+   assertz(prime(5)).
