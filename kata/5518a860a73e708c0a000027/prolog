@@ -1,0 +1,129 @@
+last_digit([], 1).
+last_digit([0], 0).
+last_digit([0,_], 1).
+last_digit([_,0], 1).
+last_digit([X,Y], R) :-
+    X > 0,
+    Y > 0,
+    !,
+    congruence_period(Y, M),
+    R is mod(X^M,10).
+last_digit([0,0,0], 0).
+last_digit(Numbers, LastDigit) :-
+    [_,_|T] = Numbers,
+    T \= [],
+    Numbers \= [0,0,0],
+    !,
+    partition(Numbers, LastDigit).
+    %depower(Numbers, M),
+    %solve(M, 1, LastDigit).
+
+%% congruence_period/2
+%% To find the distance of a number to meet another number
+%% that both have congruence relationship on modulo 10,
+%  that is, `N ≡ (N * R) (mod 10)`.
+congruence_period(N, R) :-
+    rem(10,N) =:= 0,
+    !,
+    R is (10/N).
+congruence_period(N, R) :-
+    D is gcd(N,10),
+    D > 1,
+    !,
+    R is 10/D.
+congruence_period(_, 10).
+
+%% congruent/3
+%% To find if `X ≡ Y (mod M)`.
+%% Example: ?- congruent(9, -89, 91).
+%%          true
+congruent(M, X, Y) :-
+    X > Y,
+    !,
+    congruence_period(M, P),
+    mod(X-Y,P) =:= 0.
+congruent(M, X, Y) :-
+    congruent(M, Y, X).
+
+%% partistion/2
+%  Example: ?- partition([a,b,c,d], R).
+%           R = [a, [b, c], d].
+partition(List, [H,B,L]) :-
+    [H,_|_] = List,
+    reverse(List, [L|T]),
+    reverse(T, [H|B]).
+
+%% depower/2
+%  To decompose the structure of cascade power ooperation into
+%  the structures of multiplication.
+%  Example: ?- depower([3,4,2], R).
+%           R = [[3, 3, 3, 3], [3, 3, 3, 3], [3, 3, 3, 3], [3, 3, 3, 3]].
+%           ?- depower([2,2,2,2],R).
+%           R = [[[2, 2], [2, 2]], [[2, 2], [2, 2]]].
+depower([X], X).
+depower([0,0], 1).
+depower([0,Y], 0) :-
+    Y > 0.
+depower([X,0], 1) :-
+    X > 0.
+depower([X,Y], (X,Y)) :-
+    X > 0,
+    Y > 0,
+    !.
+    %X1 is rem(X, 10),
+    %Y1 is rem(Y, 10),
+    %m(X1, Y1, R).
+    %findnsols(Y, R1, repeat(X,R1), Result).
+depower(List, Result) :-
+    [_,_|T] = List,
+    T \= [],
+    partition(List, [H,B,L]),
+    depower(H, B, L, Result).
+
+depower(H, [_], 0, Result) :-
+    depower([H], Result).
+depower(H, B, 0, Result) :-
+    partition(B, [H1,B1,_]),
+    depower([H,H1|B1], Result).
+depower(H, B, 1, Result) :-
+    depower([H|B], Result).
+depower(H, B, L, (R,Times)) :-
+    L > 1,
+    L1 is L - 1,
+    !,
+    depower(H, B, L1, R),
+    [Times|_] = B.
+    %findnsols(H1, R1, repeat(R,R1), Result).
+
+repeat(O, R) :-
+    R = O;
+    repeat(O, R).
+
+%% solve/3
+%% Multiply-tree to last-digit solver.
+%% Specification: solve(+MultTree, +Acc, -LastDigit).
+solve([], Acc, LastDigit) :-
+    Acc = LastDigit.
+solve([H|T], Acc, LastDigit) :-
+    number(H),
+    !,
+    M is rem(H*Acc,10),
+    solve(T, M, LastDigit).
+solve([H|T], Acc, LastDigit) :-
+    is_list(H),
+    !,
+    solve(H, Acc, M),
+    solve(T, M, LastDigit).
+
+m(1, _, 1) :- !.
+m(X, 1, R) :- !,
+    R is rem(X,10).
+m(X, Y, R) :-
+    R is X*Y.
+
+m(2, X, 2) :-
+    1 is rem(X, 2),
+    X  is 1;
+    X is 6.
+m(2, X, 4) :-
+    X is 1.
